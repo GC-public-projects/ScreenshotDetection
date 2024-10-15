@@ -10,8 +10,11 @@
         android:minSdkVersion="33"
         />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"
+        android:minSdkVersion="34" />
 
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"
@@ -33,7 +36,6 @@
             android:theme="@style/Theme.ScreenshotDetection">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -41,7 +43,7 @@
             android:name=".DetectNewImageInStorageService"
             android:exported="false"
             android:foregroundServiceType="dataSync"
-            android:permission="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
+            android:permission="android.permission.FOREGROUND_SERVICE"/>
     </application>
 
 </manifest>

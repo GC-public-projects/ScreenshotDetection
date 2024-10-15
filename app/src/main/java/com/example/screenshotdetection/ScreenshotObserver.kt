@@ -11,6 +11,11 @@ class ScreenshotObserver(
     handler: Handler,
     private val context: Context
 ) : ContentObserver(handler) {
+    private lateinit var onScreenshotDetected: (() -> Unit)
+
+    fun setMyOnScreenshotDetectedListener(myListener: () -> Unit) {
+        onScreenshotDetected = myListener
+    }
 
     override fun onChange(selfChange: Boolean, uri: Uri?) {
         super.onChange(selfChange, uri)
@@ -35,6 +40,7 @@ class ScreenshotObserver(
                         if (fileName.contains("Screenshot")) {
                             // Detected a screenshot
                             Log.d("ScreenshotObserver", "Screenshot detected: $fileName")
+                            onScreenshotDetected()
                         }
                     }
 

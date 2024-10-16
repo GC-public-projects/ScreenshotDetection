@@ -17,8 +17,8 @@ import androidx.core.app.NotificationCompat
 
 class DetectNewImageInStorageService : Service() {
     private lateinit var screenshotObserver: ScreenshotObserver
-    val CHANNEL_ID = "DetectNewImageChannel"
-    val NOTIFICATION_ID = 1
+    private val CHANNEL_ID = "DetectNewImageChannel"
+    private val NOTIFICATION_ID = 1
 
     override fun onCreate() {
         super.onCreate()
@@ -76,7 +76,7 @@ class DetectNewImageInStorageService : Service() {
     private fun showToast(message: String) {
         // Since we're in a service, we need to ensure it runs on the main thread
         Handler(Looper.getMainLooper()).post {
-            Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         }
     }
 

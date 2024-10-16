@@ -4,9 +4,11 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,20 +20,31 @@ import com.example.screenshotdetection.ui.theme.ScreenshotDetectionTheme
 
 class MainActivity : ComponentActivity() {
 
-    val permissionResults: MutableList<Pair<String, Boolean>> = mutableListOf()
+    private val permissionsToRequest: MutableList<String> = mutableListOf()
+    private var startServiceFlag = false
+
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (!isGranted)  {
+                val message = "All permissions are required ! Go to settings to allow them !"
+                Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+            }
+            startServiceFlag = checkNextPermission()
+            if(startServiceFlag) {
+                val intent = Intent(this, DetectNewImageInStorageService::class.java)
+                this.startService(intent)
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         checkPermissions()
-        permissionResults.forEach { pair ->
-            if(pair.second == false) {
-                requestPermissions(arrayOf(pair.first), 1)
-            }
+        startServiceFlag = checkNextPermission()
+        if(startServiceFlag) {
+            val intent = Intent(this, DetectNewImageInStorageService::class.java)
+            this.startService(intent)
         }
-        val intent = Intent(this, DetectNewImageInStorageService::class.java)
-        this.startService(intent)
-
 
         enableEdgeToEdge()
         setContent {
@@ -48,58 +61,40 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    fun checkPermissions() {
+    private fun checkPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            permissionResults.add(
-                Pair(
-                    android.Manifest.permission.READ_MEDIA_IMAGES,
-                    checkSelfPermission(
-                        android.Manifest.permission.READ_MEDIA_IMAGES
-                    ) == PackageManager.PERMISSION_GRANTED
-                )
-            )
+            if (checkSelfPermission(
+                    android.Manifest.permission.READ_MEDIA_IMAGES
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                permissionsToRequest.add(android.Manifest.permission.READ_MEDIA_IMAGES)
+            }
 
-        } else {
-            permissionResults.add(
-                Pair(
-                    android.Manifest.permission.READ_EXTERNAL_STORAGE,
-                    ContextCompat.checkSelfPermission(
-                        this,
-                        android.Manifest.permission.READ_EXTERNAL_STORAGE
-                    ) == PackageManager.PERMISSION_GRANTED
-                )
-            )
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            permissionResults.add(
-                Pair(
-                    android.Manifest.permission.FOREGROUND_SERVICE_DATA_SYNC,
-                    checkSelfPermission(
-                        android.Manifest.permission.FOREGROUND_SERVICE_DATA_SYNC
-                    ) == PackageManager.PERMISSION_GRANTED
-                )
-            )
-        } else {
-            permissionResults.add(
-                Pair(
-                    android.Manifest.permission.FOREGROUND_SERVICE,
-                    ContextCompat.checkSelfPermission(
-                        this,
-                        android.Manifest.permission.FOREGROUND_SERVICE
-                    ) == PackageManager.PERMISSION_GRANTED
-                )
-            )
-        }
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            permissionResults.add(
-                Pair(
-                    android.Manifest.permission.POST_NOTIFICATIONS,
-                    checkSelfPermission(
-                        android.Manifest.permission.POST_NOTIFICATIONS
-                    ) == PackageManager.PERMISSION_GRANTED
-                )
-            )
-        }
 
+            if (checkSelfPermission(
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                permissionsToRequest.add(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
+        } else {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.READ_EXTERNAL_STORAGE
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                permissionsToRequest.add(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+            }
+        }
+    }
+
+    private fun checkNextPermission() : Boolean {
+        if (permissionsToRequest.isNotEmpty()) {
+            val nexPermission = permissionsToRequest.removeAt(0)
+            requestPermissionLauncher.launch(nexPermission)
+            return false
+        } else {
+            return true
+        }
     }
 }

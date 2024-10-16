@@ -12,6 +12,7 @@ class ScreenshotObserver(
     private val context: Context
 ) : ContentObserver(handler) {
     private lateinit var onScreenshotDetected: (() -> Unit)
+    private var lastScreenshotUri = ""
 
     fun setMyOnScreenshotDetectedListener(myListener: () -> Unit) {
         onScreenshotDetected = myListener
@@ -39,11 +40,14 @@ class ScreenshotObserver(
                         val fileName = it.getString(it.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME))
                         if (fileName.contains("Screenshot")) {
                             // Detected a screenshot
-                            Log.d("ScreenshotObserver", "Screenshot detected: $fileName")
-                            onScreenshotDetected()
+                            if(lastScreenshotUri != fileName) {
+                                // as onChange is triggered many times by screenshot we want execute the content 1 time.
+                                Log.d("ScreenshotObserver", "Screenshot detected: $fileName")
+                                onScreenshotDetected()
+                                lastScreenshotUri = fileName
+                            }
                         }
                     }
-
                 }
             }
         }

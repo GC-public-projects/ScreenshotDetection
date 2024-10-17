@@ -29,22 +29,16 @@ class MainActivity : ComponentActivity() {
                 val message = "All permissions are required ! Go to settings to allow them !"
                 Toast.makeText(this, message, Toast.LENGTH_LONG).show()
             }
-            startServiceFlag = checkNextPermission()
-            if(startServiceFlag) {
-                val intent = Intent(this, DetectNewImageInStorageService::class.java)
-                this.startService(intent)
-            }
+            startServiceFlag = handleNextPermissionPrompt()
+            if(startServiceFlag) { startDetectNewImageInStorageService() }
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         checkPermissions()
-        startServiceFlag = checkNextPermission()
-        if(startServiceFlag) {
-            val intent = Intent(this, DetectNewImageInStorageService::class.java)
-            this.startService(intent)
-        }
+        startServiceFlag = handleNextPermissionPrompt()
+        if(startServiceFlag) { startDetectNewImageInStorageService() }
 
         enableEdgeToEdge()
         setContent {
@@ -88,7 +82,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun checkNextPermission() : Boolean {
+    private fun handleNextPermissionPrompt() : Boolean {
         if (permissionsToRequest.isNotEmpty()) {
             val nexPermission = permissionsToRequest.removeAt(0)
             requestPermissionLauncher.launch(nexPermission)
@@ -96,5 +90,10 @@ class MainActivity : ComponentActivity() {
         } else {
             return true
         }
+    }
+
+    private fun startDetectNewImageInStorageService() {
+        val intent = Intent(this, DetectNewImageInStorageService::class.java)
+        this.startService(intent)
     }
 }

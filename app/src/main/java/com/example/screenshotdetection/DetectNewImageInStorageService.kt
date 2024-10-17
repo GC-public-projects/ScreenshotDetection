@@ -16,9 +16,11 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 
 class DetectNewImageInStorageService : Service() {
+    companion object {
+        private const val CHANNEL_ID = "DetectNewImageChannel"
+        private const val NOTIFICATION_ID = 1
+    }
     private lateinit var screenshotObserver: ScreenshotObserver
-    private val CHANNEL_ID = "DetectNewImageChannel"
-    private val NOTIFICATION_ID = 1
 
     override fun onCreate() {
         super.onCreate()

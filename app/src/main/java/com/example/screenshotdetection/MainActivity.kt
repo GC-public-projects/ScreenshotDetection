@@ -20,8 +20,8 @@ import androidx.core.content.ContextCompat
 import com.example.screenshotdetection.ui.theme.ScreenshotDetectionTheme
 
 class MainActivity : ComponentActivity() {
-
     private val permissionsStatusList: MutableList<PermissionStatus> = mutableListOf()
+    private lateinit var permissionHandled: PermissionStatus
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
@@ -29,7 +29,7 @@ class MainActivity : ComponentActivity() {
                 val message = "All permissions are required ! Go to settings to allow them !"
                 Toast.makeText(this, message, Toast.LENGTH_LONG).show()
             } else {
-                PERMISSIONSTATUS. GRANTED = TRUE
+                permissionHandled.isGranted = true
             }
             handleNextPermissionPrompt()
             if (permissionsStatusList.all { it.isGranted }) {
@@ -41,9 +41,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         checkPermissions()
-        handleNextPermissionPrompt()
         if (permissionsStatusList.all { it.isGranted }) {
             startDetectNewImageInStorageService()
+        } else {
+            handleNextPermissionPrompt()
         }
 
         enableEdgeToEdge()
@@ -105,8 +106,9 @@ class MainActivity : ComponentActivity() {
     private fun handleNextPermissionPrompt() {
         permissionsStatusList.forEach { permissionStatus ->
             if (permissionStatus.toRequest) {
+                permissionHandled = permissionStatus
+                permissionStatus.toRequest = false
                 requestPermissionLauncher.launch(permissionStatus.permission)
-                permissionStatus.toRequest = !permissionStatus.toRequest
                 return
             }
         }
@@ -123,3 +125,4 @@ data class PermissionStatus(
     var isGranted: Boolean,
     var toRequest: Boolean
 )
+

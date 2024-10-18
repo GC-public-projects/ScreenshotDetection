@@ -1,5 +1,6 @@
 package com.example.screenshotdetection
 
+import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -20,25 +21,30 @@ import com.example.screenshotdetection.ui.theme.ScreenshotDetectionTheme
 
 class MainActivity : ComponentActivity() {
 
-    private val permissionsToRequest: MutableList<String> = mutableListOf()
-    private var startServiceFlag = false
+    private val permissionsStatusList: MutableList<PermissionStatus> = mutableListOf()
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            if (!isGranted)  {
+            if (!isGranted) {
                 val message = "All permissions are required ! Go to settings to allow them !"
                 Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+            } else {
+                PERMISSIONSTATUS. GRANTED = TRUE
             }
-            startServiceFlag = handleNextPermissionPrompt()
-            if(startServiceFlag) { startDetectNewImageInStorageService() }
+            handleNextPermissionPrompt()
+            if (permissionsStatusList.all { it.isGranted }) {
+                startDetectNewImageInStorageService()
+            }
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         checkPermissions()
-        startServiceFlag = handleNextPermissionPrompt()
-        if(startServiceFlag) { startDetectNewImageInStorageService() }
+        handleNextPermissionPrompt()
+        if (permissionsStatusList.all { it.isGranted }) {
+            startDetectNewImageInStorageService()
+        }
 
         enableEdgeToEdge()
         setContent {
@@ -57,38 +63,52 @@ class MainActivity : ComponentActivity() {
 
     private fun checkPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (checkSelfPermission(
-                    android.Manifest.permission.READ_MEDIA_IMAGES
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                permissionsToRequest.add(android.Manifest.permission.READ_MEDIA_IMAGES)
-            }
+            var isGranted = checkSelfPermission(
+                Manifest.permission.READ_MEDIA_IMAGES
+            ) == PackageManager.PERMISSION_GRANTED
 
+            permissionsStatusList.add(
+                PermissionStatus(
+                    Manifest.permission.READ_MEDIA_IMAGES,
+                    isGranted,
+                    !isGranted
+                )
+            )
 
-            if (checkSelfPermission(
-                    android.Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                permissionsToRequest.add(android.Manifest.permission.POST_NOTIFICATIONS)
-            }
+            isGranted = checkSelfPermission(
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+
+            permissionsStatusList.add(
+                PermissionStatus(
+                    Manifest.permission.POST_NOTIFICATIONS,
+                    isGranted,
+                    !isGranted
+                )
+            )
         } else {
-            if (ContextCompat.checkSelfPermission(
-                    this,
-                    android.Manifest.permission.READ_EXTERNAL_STORAGE
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                permissionsToRequest.add(android.Manifest.permission.READ_EXTERNAL_STORAGE)
-            }
+            val isGranted = ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.READ_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
+
+            permissionsStatusList.add(
+                PermissionStatus(
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    isGranted,
+                    !isGranted
+                )
+            )
         }
     }
 
-    private fun handleNextPermissionPrompt() : Boolean {
-        if (permissionsToRequest.isNotEmpty()) {
-            val nexPermission = permissionsToRequest.removeAt(0)
-            requestPermissionLauncher.launch(nexPermission)
-            return false
-        } else {
-            return true
+    private fun handleNextPermissionPrompt() {
+        permissionsStatusList.forEach { permissionStatus ->
+            if (permissionStatus.toRequest) {
+                requestPermissionLauncher.launch(permissionStatus.permission)
+                permissionStatus.toRequest = !permissionStatus.toRequest
+                return
+            }
         }
     }
 
@@ -97,3 +117,9 @@ class MainActivity : ComponentActivity() {
         this.startService(intent)
     }
 }
+
+data class PermissionStatus(
+    var permission: String,
+    var isGranted: Boolean,
+    var toRequest: Boolean
+)

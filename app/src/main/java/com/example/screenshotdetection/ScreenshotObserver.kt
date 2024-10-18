@@ -11,7 +11,7 @@ class ScreenshotObserver(
     handler: Handler,
     private val context: Context
 ) : ContentObserver(handler) {
-    private lateinit var onScreenshotDetected: (() -> Unit)
+    private lateinit var onScreenshotDetected: () -> Unit
     private var lastScreenshotUri = ""
 
     fun setMyOnScreenshotDetectedListener(myListener: () -> Unit) {

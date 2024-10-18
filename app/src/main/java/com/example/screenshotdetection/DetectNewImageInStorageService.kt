@@ -25,9 +25,9 @@ class DetectNewImageInStorageService : Service() {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
-
         val notification = createNotification()
         startForeground(NOTIFICATION_ID, notification)
+
         startScreenshotObserver()
         screenshotObserver.setMyOnScreenshotDetectedListener {
             showToast("Screenshot detected !")

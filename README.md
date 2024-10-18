@@ -2,7 +2,7 @@
 detection of screenhots taken by observing images addition on the device storage
 
 
-### Project status : Workable, documentation in progress...
+### Project status : In progress..., documentation in progress...
 
 ## target audience
 This project is for Jetpack Compose initiated user

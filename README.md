@@ -18,13 +18,13 @@ By observing the new data stored in the device thanks to a `ContentObserver` obj
 
 
 ## Overview
-<img src="1.jpg" alt="Alert dialog photos and videos" height="500">&emsp;
-<img src="2.jpg" alt="Alert dialog notifications" height="500">&emsp;
-<img src="3.jpg" alt="Toast permission refused" height="500">&emsp;
+<img src="/screenshots/1.jpg" alt="Alert dialog photos and videos" height="500">&emsp;
+<img src="/screenshots/2.jpg" alt="Alert dialog notifications" height="500">&emsp;
+<img src="/screenshots/3.jpg" alt="Toast permission refused" height="500">&emsp;
 
 
-<img src="4.jpg" alt="Notification Service" height="50">&emsp;
-<img src="5.jpg" alt="Toast screenshot detected" height="500">&emsp;
+<img src="/screenshots/4.jpg" alt="Notification Service" height="50">&emsp;
+<img src="/screenshots/5.jpg" alt="Toast screenshot detected" height="500">&emsp;
 
 
 

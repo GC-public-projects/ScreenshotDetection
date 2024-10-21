@@ -90,7 +90,7 @@ class MainActivity : ComponentActivity() {
         } else {
             val isGranted = ContextCompat.checkSelfPermission(
                 this,
-                android.Manifest.permission.READ_EXTERNAL_STORAGE
+                Manifest.permission.READ_EXTERNAL_STORAGE
             ) == PackageManager.PERMISSION_GRANTED
 
             permissionsStatusList.add(

@@ -14,6 +14,9 @@ import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class DetectNewImageInStorageService : Service() {
     companion object {
@@ -77,8 +80,8 @@ class DetectNewImageInStorageService : Service() {
 
     private fun showToast(message: String) {
         // Since we're in a service, we need to ensure it runs on the main thread
-        Handler(Looper.getMainLooper()).post {
-            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        CoroutineScope(Dispatchers.Main).launch {
+            Toast.makeText(this@DetectNewImageInStorageService, message, Toast.LENGTH_SHORT).show()
         }
     }
 

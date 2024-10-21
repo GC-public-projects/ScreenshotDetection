@@ -23,7 +23,7 @@ By observing the new data stored in the device thanks to a `ContentObserver` obj
 <img src="/screenshots/3.jpg" alt="Toast permission refused" height="500">&emsp;
 
 
-<img src="/screenshots/4.jpg" alt="Notification Service" height="50">&emsp;
+<img src="/screenshots/4.jpg" alt="Notification Service" height="500">&emsp;
 <img src="/screenshots/5.jpg" alt="Toast screenshot detected" height="500">&emsp;
 
 
@@ -58,3 +58,61 @@ In AndroidManifest
 ```
 
 # Code
+
+## ScreenshotObserver
+
+### Purpose
+Detects when a modification is made on the storage in a specific place & triggers some actions if the name contains "Screenshot". Works fine with last Samsungs Galaxy but can be adapted following the devices.
+
+### Content
+In main package create kotlin class named `ScreenshotObserver`
+``` kotlin
+class ScreenshotObserver(
+    handler: Handler,
+    private val context: Context
+) : ContentObserver(handler) {
+    private lateinit var onScreenshotDetected: () -> Unit
+    private var lastScreenshotUri = ""
+
+    fun setMyOnScreenshotDetectedListener(myListener: () -> Unit) {
+        onScreenshotDetected = myListener
+    }
+
+    override fun onChange(selfChange: Boolean, uri: Uri?) {
+        super.onChange(selfChange, uri)
+
+        Log.d("ScreenshotObserver", "onChangeTriggered")
+
+        // Check if the change is in the Screenshots directory
+        if (uri != null && uri.toString().contains("content://media/external/images/media")) {
+            // A screenshot is likely taken
+            val cursor = context.contentResolver.query(
+                uri,
+                arrayOf(MediaStore.Images.Media.DISPLAY_NAME),
+                null,
+                null,
+                null
+            )
+            cursor?.use {
+                if (it.moveToFirst()) {
+                    val columnIndex = it.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME)
+                    if(columnIndex >=0 ) {
+                        val fileName = it.getString(it.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME))
+                        if (fileName.contains("Screenshot")) {
+                            // Detected a screenshot
+                            if(lastScreenshotUri != fileName) {
+                                // as onChange is triggered many times by screenshot we want execute the content 1 time.
+                                Log.d("ScreenshotObserver", "Screenshot detected: $fileName")
+                                onScreenshotDetected()
+                                lastScreenshotUri = fileName
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+### Components explanations

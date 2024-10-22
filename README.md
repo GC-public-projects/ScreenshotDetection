@@ -68,9 +68,8 @@ Detects when a modification is made on the storage in a specific place & trigger
 In main package create kotlin class named `ScreenshotObserver`
 ``` kotlin
 class ScreenshotObserver(
-    handler: Handler,
     private val context: Context
-) : ContentObserver(handler) {
+) : ContentObserver(null) {
     private lateinit var onScreenshotDetected: () -> Unit
     private var lastScreenshotUri = ""
 
@@ -81,30 +80,34 @@ class ScreenshotObserver(
     override fun onChange(selfChange: Boolean, uri: Uri?) {
         super.onChange(selfChange, uri)
 
-        Log.d("ScreenshotObserver", "onChangeTriggered")
+        CoroutineScope(Dispatchers.IO).launch {
+            Log.d("ScreenshotObserver", "onChangeTriggered")
 
-        // Check if the change is in the Screenshots directory
-        if (uri != null && uri.toString().contains("content://media/external/images/media")) {
-            // A screenshot is likely taken
-            val cursor = context.contentResolver.query(
-                uri,
-                arrayOf(MediaStore.Images.Media.DISPLAY_NAME),
-                null,
-                null,
-                null
-            )
-            cursor?.use {
-                if (it.moveToFirst()) {
-                    val columnIndex = it.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME)
-                    if(columnIndex >=0 ) {
-                        val fileName = it.getString(it.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME))
-                        if (fileName.contains("Screenshot")) {
-                            // Detected a screenshot
-                            if(lastScreenshotUri != fileName) {
-                                // as onChange is triggered many times by screenshot we want execute the content 1 time.
-                                Log.d("ScreenshotObserver", "Screenshot detected: $fileName")
-                                onScreenshotDetected()
-                                lastScreenshotUri = fileName
+            // Check if the change is in the Screenshots directory
+            uri?.let {
+                if (it.toString().contains("content://media/external/images/media")) {
+                    val cursor = context.contentResolver.query(
+                        uri,
+                        arrayOf(MediaStore.Images.Media.DISPLAY_NAME),
+                        null,
+                        null,
+                        null
+                    )
+                    cursor?.use { c ->
+                        if(c.moveToFirst()) {
+                            val columnIndex =
+                                c.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME)
+                            if (columnIndex >= 0) {
+                                val fileName =
+                                    c.getString(columnIndex)
+
+                                if (fileName.contains("Screenshot") && lastScreenshotUri != fileName) {
+                                    lastScreenshotUri = fileName
+                                    withContext(Dispatchers.Main) {
+                                        Log.d("ScreenshotObserver", "Screenshot detected: $fileName")
+                                        onScreenshotDetected()
+                                    }
+                                }
                             }
                         }
                     }
@@ -116,3 +119,22 @@ class ScreenshotObserver(
 ```
 
 ### Components explanations
+
+- `context` : the context of a service or an activity is needed to use `contentResolver` that's why it is use as param of tha class.
+- `contentResolver` : It is the bridge between the app and the content providers (like the system's media store, contacts, calendar, or any other app's exposed content), it provides a unified API for reading, inserting, updating, and deleting data across different content providers. 
+
+It is used here to query the `Mediastore` but is also used in `DetectNewImageInStorageService` to register `ScreenshotObserver` and make it workable.
+
+- `MediaStore` : DB of Sqlite format that stores some data of the files in the storage (like \_ID, DISPLAY\_NAME, SIZE, RELATIVE_PATH, etc...)
+
+- `onScreenshotDetected` : custom high order function called when a screenshot is detected. This function is affected thanks to the public `setMyOnScreenshotDetectedListener` function. the onCreate function from `DetectNewImageInStorageService` will call `setMyOnScreenshotDetectedListener` after instanciated `screenshotObserver` and provides as param a lambda expression that shows a Toast on the screen ("Screenshot detected !").
+
+- `onChange` : method implemented by the abstract class `ContentObserver`. The fucntion is called each time a change is done on `MediaStore.Images.Media.EXTERNAL_CONTENT_URI`
+
+
+
+
+
+
+
+

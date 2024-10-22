@@ -7,9 +7,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.os.Build
-import android.os.Handler
 import android.os.IBinder
-import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
@@ -23,6 +21,7 @@ class DetectNewImageInStorageService : Service() {
         private const val CHANNEL_ID = "DetectNewImageChannel"
         private const val NOTIFICATION_ID = 1
     }
+
     private lateinit var screenshotObserver: ScreenshotObserver
 
     override fun onCreate() {
@@ -60,7 +59,10 @@ class DetectNewImageInStorageService : Service() {
 
     private fun createNotification(): Notification {
         val stopIntent =
-            Intent(this, StopDetectNewImageReceiver::class.java) // Define a receiver to stop the service
+            Intent(
+                this,
+                StopDetectNewImageReceiver::class.java
+            ) // Define a receiver to stop the service
         val stopPendingIntent = PendingIntent.getBroadcast(
             this, 0, stopIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
@@ -86,16 +88,16 @@ class DetectNewImageInStorageService : Service() {
     }
 
     private fun startScreenshotObserver() {
-        val handler = Handler(Looper.getMainLooper())
-        screenshotObserver = ScreenshotObserver(handler, this)
+        screenshotObserver = ScreenshotObserver(this@DetectNewImageInStorageService)
 
-        // URI for external images (where screenshots are usually saved)
-        val uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        CoroutineScope(Dispatchers.Main).launch {
+            // URI for external images (where screenshots are usually saved)
+            val uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
 
-        // Register the content observer to listen for changes in external images
-        contentResolver.registerContentObserver(uri, true, screenshotObserver)
+            // Register the content observer to listen for changes in external images
+            contentResolver.registerContentObserver(uri, true, screenshotObserver)
 
-        Log.d("ScreenshotObserver", "ScreenshotObserver started and registered.")
+            Log.d("ScreenshotObserver", "ScreenshotObserver started and registered.")
+        }
     }
-
 }

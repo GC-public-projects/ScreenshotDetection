@@ -426,7 +426,7 @@ data class PermissionStatus(
  ```
 
  ### Components explanations
- No explanations here, the project is for initiated users and the multiple permission mechanism hence the start of a service are considered as known. Some conditions to handle some perimissions needs to be implemented as the permissions are not the same following the Android version.
+ No explanations here, the project is for initiated users and the multiple permission mechanism hence the start of a service are considered as known. Some conditions to handle some permissions need to be implemented as the permissions are not the same following the Android version.
 
 
 

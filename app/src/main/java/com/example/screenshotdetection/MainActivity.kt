@@ -23,8 +23,6 @@ class MainActivity : ComponentActivity() {
     private val permissionsStatusList: MutableList<PermissionStatus> = mutableListOf()
     private lateinit var permissionHandled: PermissionStatus
 
-
-
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (!isGranted) {
@@ -41,7 +39,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
-        
         super.onCreate(savedInstanceState)
 
         checkPermissions()

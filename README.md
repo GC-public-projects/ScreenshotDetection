@@ -22,7 +22,8 @@ By observing the new data stored in the device thanks to a `ContentObserver` obj
 - 2 : Alert dialog notifications
 - 3 : Toast permission refused
 - 4 : Notification Service
-- 5 : Toast screenshot detected
+- 5 : Toast "screenshot detected" when app open
+- 6 : Toast "screenshot detected" whan app closed
 
 
 <img src="/screenshots/1.jpg" alt="Alert dialog photos and videos" height="500">&emsp;
@@ -31,7 +32,9 @@ By observing the new data stored in the device thanks to a `ContentObserver` obj
 
 
 <img src="/screenshots/4.jpg" alt="Notification Service" height="500">&emsp;
-<img src="/screenshots/5.jpg" alt="Toast screenshot detected" height="500">&emsp;
+<img src="/screenshots/5.jpg" alt="Toast screenshot detected when app open" height="500">&emsp;
+<img src="/screenshots/6.jpg" alt="Toast screenshot detected when app closed" height="500">&emsp;
+
 
 ## Warning
 The screenshot trigger with virtual devices doesn't work with the availabe screenshot icon. It exist some ways to implent the screenshot correctly. I didn't use them i just plugged a real device (Galaxy S23) & with this one the app works fine.
